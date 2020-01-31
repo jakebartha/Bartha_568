@@ -3,8 +3,8 @@
 I hope to be working in the environmental consulting when I graduate.
 _sports_
 * football
-  *hockey
-  *golf 
+* hockey
+* golf 
   
 
 
