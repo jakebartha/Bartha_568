@@ -1,0 +1,12 @@
+# import arcpy, create workspace, run buffer tool found on RIGIS, set parameters
+import arcpy
+# ALL attributes written out
+Infeature = "Coastal_Wetlands_Designated_for_Preservation.shp"
+outputfeature = r"E:\NRS568Python_Bartha\class4\CodingChallenge4Assi4\CodingChallenge4Assi4\OutputBufferCHall4.shp"
+distanceField = "100 Feet"
+sideType = "FULL"
+endType = "ROUND"
+dissolveType = "LIST"
+dissolveField = "Distance"
+arcpy.env.workspace = r"C:\CodingChallenge4Ass4\Coastal_Wetlands_Designated_for_Preservation.cpg"
+arcpy.Buffer_analysis(Infeature, outputfeature, distanceField, "FULL", "ROUND", "NONE", "", "PLANAR")
