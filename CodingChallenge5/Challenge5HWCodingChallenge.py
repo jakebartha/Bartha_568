@@ -44,7 +44,7 @@ for s in species:
                 string = ",".join(row)
                 string = string + "\n"
                 file.write(string)
-
+        file.close() # Essential to avoid an error about unreadable column names            
     # create your parameters for the data that you collected
     in_Table = s[1:3] + ".csv"
     x_coords = 'Longitude'
