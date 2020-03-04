@@ -5,4 +5,5 @@ if age < 65:
 
 else:
     print("you are retired")
-
+else: # Rejection statement is the entered input is not a number
+    print "'" + age + "'" + " is not a number."
