@@ -1,1 +1,39 @@
+import arcpy # Imports arcpy toolbox
+arcpy.env.overwriteOutput = True # Overwrites files with the same name to avoid the script from
+                                    # crashing during repeated trials
 
+arcpy.env.workspace = r"C:\NRS568_Bartha_workfolder\Midterm" # Sets workspace, can be changed easily
+
+inputFeatures = r"Coastal_Wetlands_Designated_for_Preservation.shp" # Input shapefile that we want to buffer
+outputFeatures = r"Wetlandsbufferoutput.shp" # Name of the outputted buffer file
+distance = "5 meters" # Distance and units in which we want to buffer
+sideType = "FULL"
+lineEndType = "ROUND"
+dissolveOption = "NONE"
+dissolveField = "#"
+method = "PLANAR"
+arcpy.Buffer_analysis(inputFeatures, outputFeatures, distance, sideType,
+                      lineEndType, dissolveOption, dissolveField, method)
+
+if arcpy.Exists(outputFeatures):
+    print "Created file successfully!" # Checks to see if the buffered shapefile was created successfully
+# This is the code for the intersect tool change names appropriately
+Inlayer = [r"RIDOT_Roads_2016.shp", r"Wetlandsbufferoutput.shp"] # has to be a list with all intersecting files
+Outputlyr = r"RoadsWetlandsBufferIntersect.shp"
+Joinattributes = "ALL"
+
+
+arcpy.Intersect_analysis(Inlayer, Outputlyr, Joinattributes)
+if arcpy.Exists(Outputlyr):
+    print "Created file successfully!" # Checks to see if the outputlyr shapefile was created successfully
+# roads line feature to raster tool
+# Set local variables
+inFeature = r"RoadsWetlandsBufferIntersect.shp"
+outRaster = r"RoadsRIraster.img"
+cellSize = 25
+field = "CLASS"
+
+# Execute FeatureToRaster
+arcpy.FeatureToRaster_conversion(inFeature, field, outRaster, cellSize)
+if arcpy.Exists(outRaster):
+    print "Created file successfully!" # Checks to see if the output raster was created successfully
