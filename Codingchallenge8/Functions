@@ -1,1 +1,13 @@
 
+import arcpy
+def checkFolder(a, b):
+    arcpy.env.workspace = a
+    rasterList = arcpy.ListRasters("*", b)
+    rasterList = [x for x in rasterList if "_BQA.tif" not in x]
+    print "The files ending in " + b + " are " + str(rasterList)
+    print "The number of files in that folder are " + str(len(rasterList))
+
+
+checkFolder(r"C:\NRS568_Bartha_workfolder\Class8\Step_3_data_lfs\201507", "tif")
+
+print "All done."
