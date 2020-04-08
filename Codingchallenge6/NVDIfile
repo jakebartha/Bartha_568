@@ -1,1 +1,29 @@
 
+# Task 1 - Use what you have learned to process the Landsat files provided, this time, you know you are
+# interested in the NVDI index which will use Bands 4 (red, aka vis) and 5 (near-infrared, aka nir) from the
+# Landsat 8 imagery. Data provided are monthly (a couple are missing due to cloud coverage) during the
+# year 2015 for the State of RI.
+
+# First check to see if file exists
+# Use the function of search and file first search for folder then file in order.
+import os
+import arcpy
+
+arcpy.CheckOutExtension("Spatial")
+listMonths = ["02", "04", "05", "07", "10", "11"]
+outputDirectory = r"C:\NRS568_Bartha_workfolder\Class8\Step_3_data_lfs\NVDI_Outputs"
+if not os.path.exists(outputDirectory):
+    os.mkdir(outputDirectory)
+
+for month in listMonths:
+    arcpy.env.workspace = r"C:\NRS568_Bartha_workfolder\Class8\Step_3_data_lfs\2015" + month
+    print "Extracting Bands 4 and 5 from folder 2015" + month
+    bandFour = arcpy.ListRasters("*", "TIF")
+    bandFour = [x for x in bandFour if "B4" in x]
+    print "The file for Band 4 is " + str(bandFour) + "."
+    bandFive = arcpy.ListRasters("*", "TIF")
+    bandFive = [x for x in bandFive if "B5" in x]
+    print "The file for Band 5 is " + str(bandFive) + "."
+    arcpy.gp.RasterCalculator_sa('Float("' + bandFive[0] + '"-"' + bandFour[0] + '") / Float("' + bandFive[0] + '"+"' + bandFour[0] + '")',
+                                 os.path.join(outputDirectory, "NVDI_2015" + month + ".tif"))
+print "finishing composite"
