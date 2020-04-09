@@ -1,4 +1,5 @@
-
+# using the data from Class 6 step 3 TIFs. def the folder, check the folder through function and count the files in that folder that are tif.
+#give a, and b designations to the arcpy function and to the if statements to create the functions. 
 import arcpy
 def checkFolder(a, b):
     arcpy.env.workspace = a
