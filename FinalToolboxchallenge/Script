@@ -2,37 +2,100 @@
 # This toolbox will contain three (3) tools, including a List feature tool, a 5-meter Buffer tool, and an NDVI Calculator.
 # Example data to practice with is provided in the accompanying .zip file.
 
+# Example data to practice with is provided.
+
 import arcpy
+
 
 class Toolbox(object):
     def __init__(self):
         """Define the toolbox (the name of the toolbox is the name of the .pyt file)."""
         self.label = "BarthaFinalToolbox" # What the toolbox will be called in ArcMap
         self.alias = ""
-        self.tools = [ListFeatures, Buffer5meters, Produce_NDVI]  # List of tool classes associated with this toolbox
+        self.tools = [NDVI_Create, ListShapefiles, Buffer5meters]  # List of tool classes associated with this toolbox
 
 
-class ListFeatures(object):
+class NDVI_Create(object):
     def __init__(self):
         """Define the tool (tool name is the name of the class)."""
-        self.label = "List Feature class Tool" # What the tool will be called in ArcMap
-        self.description = "This tool will search a desired folder and list all raster files of a specified type."
+        self.label = "NDVI Creation" # What the tool will be called in ArcMap
+        self.description = "This tool will take in two satellite imagery files and create an NDVI output."
         self.canRunInBackground = False
 
     def getParameterInfo(self):
         """Define parameter definitions"""
         parameters = []
-        input_line = arcpy.Parameter(name="input_line", # Variable name
-                                     displayName="Enter the folder you want to search:", # Text that will be displayed in GUI
-                                     datatype="DEFolder", # Type of data that can be inputted/outputted
-                                     parameterType="Required", # Required|Optional|Derived
-                                     direction="Input") # Input|Output
-        parameters.append(input_line)
-        feature_type = arcpy.Parameter(name="feature_type", # Variable name
-                                    displayName="Enter the feature class to display:", # Text that will be displayed in GUI
-                                    datatype="GPString",  # Type of data that can be inputted/outputted
-                                    parameterType="Required",  # Required|Optional|Derived
-                                    direction="Input") # Input|Output
+        red_band = arcpy.Parameter(name="red_band", # Variable name
+                                 displayName="Enter location for Red Band:", # Display text on screen
+                                 datatype="GPRasterLayer", # Type of data needed
+                                 parameterType="Required", # Required|Optional|Derived
+                                 direction="Input") # Input|Output
+        parameters.append(red_band)
+
+        NIR_band = arcpy.Parameter(name="NIR_band",
+                                 displayName="Enter location for Near-infrared Band:",
+                                 datatype="GPRasterLayer",
+                                 parameterType="Required",
+                                 direction="Input")
+        parameters.append(NIR_band)
+
+        ndvi_output = arcpy.Parameter(name="ndvi_output",
+                                      displayName="Enter a location and name for the NDVI output:",
+                                      datatype="GPRasterLayer",
+                                      parameterType="Required",
+                                      direction="Output")
+        parameters.append(ndvi_output)
+        return parameters
+
+    def isLicensed(self):
+        """Set whether tool is licensed to execute."""
+        return True
+
+    def updateParameters(self, parameters):
+        """Modify the values and properties of parameters before internal
+        validation is performed.  This method is called whenever a parameter
+        has been changed."""
+        return
+
+    def updateMessages(self, parameters):
+        """Modify the messages created by internal validation for each tool
+        parameter.  This method is called after internal validation."""
+        return
+
+    def execute(self, parameters, messages):
+        """The source code of the tool."""
+        red_band = parameters[0].valueAsText
+        NIR_band = parameters[1].valueAsText
+        ndvi_output = parameters[2].valueAsText
+
+        arcpy.gp.RasterCalculator_sa('Float("' + NIR_band + '"-"' + red_band + '") / Float("' + NIR_band + '"+"' + red_band + '")',
+        ndvi_output)
+
+        arcpy.AddMessage("Finished creating NDVI output.")
+        return
+
+class ListShapefiles(object):
+    def __init__(self):
+        """Define the tool (tool name is the name of the class)."""
+        self.label = "List Shapefiles" # What the tool will be called in ArcMap
+        self.description = "This tool will search a provided folder and list all the shapefiles of a certain type."
+        self.canRunInBackground = False
+
+    def getParameterInfo(self):
+        """Define parameter definitions"""
+        parameters = []
+        shp_folder = arcpy.Parameter(name="shp_folder",
+                                     displayName="Enter the folder you want to search:",
+                                     datatype="DEFolder",
+                                     parameterType="Required",
+                                     direction="Input")
+        parameters.append(shp_folder)
+
+        feature_type = arcpy.Parameter(name="feature_type",
+                                    displayName="Enter the type of feature class to find:",
+                                    datatype="GPString",
+                                    parameterType="Required",
+                                    direction="Input")
         parameters.append(feature_type)
         return parameters
 
@@ -53,14 +116,13 @@ class ListFeatures(object):
 
     def execute(self, parameters, messages):
         """The source code of the tool."""
-        input_line = parameters[0].valueAsText
+        shp_folder = parameters[0].valueAsText
         feature_type = parameters[1].valueAsText
 
-        arcpy.env.workspace = input_line
+        arcpy.env.workspace = shp_folder
         featureList = arcpy.ListFeatureClasses("*", feature_type)
-        featureList = [x for x in featureList if "_BQA.tif" not in x]
-        arcpy.AddMessage("The " + feature_type + " are " + str(featureList) + ".")
-        arcpy.AddMessage("The number of " + feature_type + " kinds are " + str(len(featureList)) + ".")
+        arcpy.AddMessage("The " + feature_type + " shapefiles are " + str(featureList) + ".")
+        arcpy.AddMessage("The number of " + feature_type + " shapefiles are " + str(len(featureList)) + ".")
         return
 
 
@@ -75,13 +137,14 @@ class Buffer5meters(object):
         """Define parameter definitions"""
         parameters = []
         shp1 = arcpy.Parameter(name="shp1",
-                               displayName="Enter your first shapefile:",
+                               displayName="Enter shapefile you want to buffer:",
                                datatype="DEFeatureClass",
                                parameterType="Required",
                                direction="Input")
         parameters.append(shp1)
+
         shp1_output = arcpy.Parameter(name="shp1_output",
-                                      displayName="Enter the output destination for the first buffered shapefile:",
+                                      displayName="Enter a location and name for the buffered output:",
                                       datatype="DEFeatureClass",
                                       parameterType="Required",
                                       direction="Output")
@@ -108,7 +171,6 @@ class Buffer5meters(object):
         shp1 = parameters[0].valueAsText
         shp1_output = parameters[1].valueAsText
 
-
         inputFeatures = shp1
         outputFeatures = shp1_output
         distance = "5 meters"
@@ -117,65 +179,9 @@ class Buffer5meters(object):
         dissolveOption = "NONE"
         dissolveField = "#"
         method = "PLANAR"
+
         arcpy.Buffer_analysis(inputFeatures, outputFeatures, distance, sideType,
                               lineEndType, dissolveOption, dissolveField, method)
 
-        arcpy.AddMessage("Buffering of files completed!")
-        return
-
-
-class Produce_NDVI(object):
-    def __init__(self):
-        """Define the tool (tool name is the name of the class)."""
-        self.label = "NDVI Calculation Tool" # What the tool will be called in ArcMap
-        self.description = "This tool will take in two .TIF bands and produce an NDVI output from them."
-        self.canRunInBackground = False
-
-    def getParameterInfo(self):
-        """Define parameter definitions"""
-        parameters = []
-        band_4 = arcpy.Parameter(name="band_4",
-                                 displayName="Enter location for red band:",
-                                 datatype="GPRasterLayer",
-                                 parameterType="Required",
-                                 direction="Input")
-        parameters.append(band_4)
-        band_5 = arcpy.Parameter(name="band_5",
-                                 displayName="Enter location for near infrared band:",
-                                 datatype="GPRasterLayer",
-                                 parameterType="Required",
-                                 direction="Input")
-        parameters.append(band_5)
-        ndvi_output = arcpy.Parameter(name="ndvi_output",
-                                      displayName="Enter a destination for the NDVI output:",
-                                      datatype="GPRasterLayer",
-                                      parameterType="Required",
-                                      direction="Output")
-        parameters.append(ndvi_output)
-        return parameters
-
-    def isLicensed(self):
-        """Set whether tool is licensed to execute."""
-        return True
-
-    def updateParameters(self, parameters):
-        """Modify the values and properties of parameters before internal
-        validation is performed.  This method is called whenever a parameter
-        has been changed."""
-        return
-
-    def updateMessages(self, parameters):
-        """Modify the messages created by internal validation for each tool
-        parameter.  This method is called after internal validation."""
-        return
-
-    def execute(self, parameters, messages):
-        """The source code of the tool."""
-        band_4 = parameters[0].valueAsText
-        band_5 = parameters[1].valueAsText
-        ndvi_output = parameters[2].valueAsText
-
-        arcpy.gp.RasterCalculator_sa('Float("' + band_5 + '"-"' + band_4 + '") / Float("' + band_5 + '"+"' + band_4 + '")',
-        ndvi_output)
-        arcpy.AddMessage("NDVI calculations completed!")
+        arcpy.AddMessage("Buffered shapefile created!")
         return
