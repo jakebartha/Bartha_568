@@ -1,8 +1,6 @@
 # For my final in NRS 568 I wanted to create a user friendly toolbox in python that used 3 tools.
 # This toolbox will contain three (3) tools, including a List feature tool, a 5-meter Buffer tool, and an NDVI Calculator.
-# Example data to practice with is provided in the accompanying .zip file.
 
-# Example data to practice with is provided.
 
 import arcpy
 
