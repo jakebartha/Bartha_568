@@ -17,22 +17,20 @@ arcpy.env.workspace = r'E:\NRS568Python_Bartha\Class5'
 species = []
 with open("species.csv") as population_csv:
     csv_reader = csv.reader(population_csv, delimiter=',')
-
     line_count = 0
-
     for row in csv_reader:
         if line_count != 0:
             if row[0] not in species:
-                species.append(row[0])
+                species.append(row[0]) #finds two species 
         if line_count == 0:
             print "Column names are: " + str(row)
             line_count += 1
         line_count += 1
 
-print species
+print species #prints the two species 
 print("Processed " + str(line_count) + " lines.")
 
-# seperating two species list creating a loop then matching species list
+# creates loop that goes through csv twice to get both species.
 for s in species:
     with open("species.csv") as population_csv:
         csv_reader = csv.reader(population_csv, delimiter=',')
@@ -40,19 +38,17 @@ for s in species:
         file.write("name,Longitude,Latitude\n")
         for row in csv_reader:
             if row[0] == s:
-
-                string = ",".join(row)
-                string = string + "\n"
-                file.write(string)
-        file.close() # Essential to avoid an error about unreadable column names            
-    # create your parameters for the data that you collected
+               string = ",".join(row)
+               string = string + "\n"
+               file.write(string)
+        file.close() # avoids error in reading column names             
+    # converts split data from csv into a shapefile 
     in_Table = s[1:3] + ".csv"
     x_coords = 'Longitude'
     y_coords = 'Latitude'
 
-    out_Layer = "shtjyjhy"
+    out_Layer = "Combinedlayer" #combine the data that was extracted from abve loop 
     saved_Layer = s[1:3] + ".shp"
-    # you then need to set the spatial reference of the data
     spRef = arcpy.SpatialReference(4326)  # 4326 == WGS 1984
     print  # code starts to fail after this line and I can not understand why.
     lyr = arcpy.MakeXYEventLayer_management(in_Table, x_coords, y_coords, out_Layer, spRef, "")
@@ -78,7 +74,7 @@ for s in species:
 
     # Set the origin of the fishnet
     originCoordinate = str(XMin) + " " + str(YMin)  # Left bottom of our point data
-    yAxisCoordinate = str(XMin) + " " + str(YMin + 1.0)  # This sets the orientation on the y-axis, so we head north
+    yAxisCoordinate = str(XMin) + " " + str(YMin + 1.0)  
     cellSizeWidth = "0.25"
     cellSizeHeight = "0.25"
     numRows = ""  # Leave blank, as we have set cellSize
@@ -87,7 +83,7 @@ for s in species:
     labels = "NO_LABELS"
     templateExtent = "#"  # No need to use, as we have set yAxisCoordinate and oppositeCorner
     geometryType = "POLYGON"  # Create a polygon, could be POLYLINE
-
+#this  will create a fishnet for the newly created files 
     arcpy.CreateFishnet_management(outFeatureClass, originCoordinate, yAxisCoordinate,
                                        cellSizeWidth, cellSizeHeight, numRows, numColumns,
                                        oppositeCorner, labels, templateExtent, geometryType)
@@ -96,20 +92,20 @@ for s in species:
 
     # # you then need to join the dataset with the fishnet you created to make the heatmap
     # # 4. Undertake a Spatial Join to join the fishnet to the observed points.
-    #
-    # target_features= s[1:3] + "2.shp"
-    # join_features= s[1:3] + ".shp"
-    # out_feature_class= s[1:3] + "heatmap.shp"
-    # join_operation="JOIN_ONE_TO_ONE"
-    # join_type="KEEP_ALL"
-    # field_mapping=""
-    # match_option="INTERSECT"
-    # search_radius=""
-    # distance_field_name=""
-    #
-    # arcpy.SpatialJoin_analysis(target_features, join_features, out_feature_class,
-    #                            join_operation, join_type, field_mapping, match_option,
-    #                            search_radius, distance_field_name)
-    # # make sure it created the heatmap
-    # if arcpy.Exists(out_feature_class):
-    #     print "Created Heatmap file successfully!"
+   
+    target_features= s[1:3] + "2.shp"
+    join_features= s[1:3] + ".shp"
+    out_feature_class= s[1:3] + "heatmap.shp"
+    join_operation="JOIN_ONE_TO_ONE"
+    join_type="KEEP_ALL"
+    field_mapping=""
+    match_option="INTERSECT"
+    search_radius=""
+    distance_field_name=""
+    
+    arcpy.SpatialJoin_analysis(target_features, join_features, out_feature_class,
+                               join_operation, join_type, field_mapping, match_option,
+                               search_radius, distance_field_name)
+    # make sure it created the heatmap
+    if arcpy.Exists(out_feature_class):
+        print "Created Heatmap file successfully!"
